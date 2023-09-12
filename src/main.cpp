@@ -98,6 +98,74 @@ int main()
         
         // Create the entities
         // <YOUR CODE HERE>
+        for (int i=0; i<(uint32_t)request_body["plants"]; i++) {
+
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, 14);
+            int random_i = dis(gen);
+            int random_j = dis(gen);
+
+            while (entity_grid[random_i][random_j].type != empty) {
+                random_i = dis(gen);
+                random_j = dis(gen);
+            }
+           
+            pos_t random_position;
+            random_position.i = random_i;
+            random_position.j = random_j;
+
+            entity_grid[random_i][random_j].type = plant;
+            entity_grid[random_i][random_j].age = 0;
+            entity_grid[random_i][random_j].energy = 0;
+        }
+
+
+        for (int i=0; i<(uint32_t)request_body["carnivores"]; i++) {
+
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, 14);
+            int random_i = dis(gen);
+            int random_j = dis(gen);
+
+            while (entity_grid[random_i][random_j].type != empty) {
+                random_i = dis(gen);
+                random_j = dis(gen);
+            }
+           
+            pos_t random_position;
+            random_position.i = random_i;
+            random_position.j = random_j;
+
+            entity_grid[random_i][random_j].type = carnivore;
+            entity_grid[random_i][random_j].age = 0;
+            entity_grid[random_i][random_j].energy = 100;
+        }
+
+        for (int i=0; i<(uint32_t)request_body["herbivore"]; i++) {
+
+            static std::random_device rd;
+            static std::mt19937 gen(rd());
+            std::uniform_int_distribution<> dis(0, 14);
+            int random_i = dis(gen);
+            int random_j = dis(gen);
+
+            while (entity_grid[random_i][random_j].type != empty) {
+                random_i = dis(gen);
+                random_j = dis(gen);
+            }
+           
+            pos_t random_position;
+            random_position.i = random_i;
+            random_position.j = random_j;
+
+            entity_grid[random_i][random_j].type = herbivore;
+            entity_grid[random_i][random_j].age = 0;
+            entity_grid[random_i][random_j].energy = 100;
+        }
+
+
 
         // Return the JSON representation of the entity grid
         nlohmann::json json_grid = entity_grid; 
