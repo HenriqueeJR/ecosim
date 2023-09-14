@@ -10,7 +10,7 @@ static const uint32_t NUM_ROWS = 15;
 // Constants
 const uint32_t PLANT_MAXIMUM_AGE = 10;
 const uint32_t HERBIVORE_MAXIMUM_AGE = 50;
-const uint32_t CARNIVORE_MAXIMUM_AGE = 80;
+const uint32_t CARNIVORE_MAXIMUM_AGE = 80;s
 const uint32_t MAXIMUM_ENERGY = 200;
 const uint32_t THRESHOLD_ENERGY_FOR_REPRODUCTION = 20;
 
@@ -110,10 +110,6 @@ int main()
                 random_i = dis(gen);
                 random_j = dis(gen);
             }
-           
-            pos_t random_position;
-            random_position.i = random_i;
-            random_position.j = random_j;
 
             entity_grid[random_i][random_j].type = plant;
             entity_grid[random_i][random_j].age = 0;
@@ -134,16 +130,12 @@ int main()
                 random_j = dis(gen);
             }
            
-            pos_t random_position;
-            random_position.i = random_i;
-            random_position.j = random_j;
-
             entity_grid[random_i][random_j].type = carnivore;
             entity_grid[random_i][random_j].age = 0;
             entity_grid[random_i][random_j].energy = 100;
         }
 
-        for (int i=0; i<(uint32_t)request_body["herbivore"]; i++) {
+        for (int i=0; i<(uint32_t)request_body["herbivores"]; i++) {
 
             static std::random_device rd;
             static std::mt19937 gen(rd());
@@ -155,10 +147,6 @@ int main()
                 random_i = dis(gen);
                 random_j = dis(gen);
             }
-           
-            pos_t random_position;
-            random_position.i = random_i;
-            random_position.j = random_j;
 
             entity_grid[random_i][random_j].type = herbivore;
             entity_grid[random_i][random_j].age = 0;
@@ -180,6 +168,67 @@ int main()
         // Iterate over the entity grid and simulate the behaviour of each entity
         
         // <YOUR CODE HERE>
+        for (int i=0; i<15; i++) {
+            for (int j=0; j<15; j++) {
+
+                if (entity_grid[i][j].type == plant) {
+                    std::vector<pos_t> possible_growth_positions;
+
+                    if (entity_grid[i+1][j].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i+1;
+                        possible_position.j = j;
+                        possible_growth_positions.push_back(possible_position);
+                    }
+                    if (entity_grid[i-1][j].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i-1;
+                        possible_position.j = j;
+                        possible_growth_positions.push_back(possible_position);
+                    }
+                    if (entity_grid[i][j+1].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i;
+                        possible_position.j = j+1;
+                        possible_growth_positions.push_back(possible_position);
+                    }
+                    if (entity_grid[i][j-1].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i;
+                        possible_position.j = j-1;
+                        possible_growth_positions.push_back(possible_position);
+                    }
+
+                    if (!possible_growth_positions.empty()) {
+                        if(random_action(0.2)) {
+                            std::random_device rd;  
+                            std::mt19937 generator(rd());  
+                            std::uniform_int_distribution<int> distribution(0, possible_growth_positions.size() - 1);
+                            
+                            pos_t selected_growth_position = possible_growth_positions[distribution(generator)];
+                            entity_grid[selected_growth_position.i][selected_growth_position.l].type = plant;
+                            entity_grid[selected_growth_position.i][selected_growth_position.l].energy = 0;
+                            entity_grid[selected_growth_position.i][selected_growth_position.l].age = 0;
+                        }
+
+                    }
+
+                    entity_grid[i][j].energy += 1;  //increase age
+
+                    if (entity_grid[i][j].energy == 10) {  //decompose
+                        entity_grid[i][j].type = empty;
+                        entity_grid[i][j].energy = 0;
+                        entity_grid[i][j].age = 0;
+                    }
+
+
+                }
+
+                else if (entity_grid[i][j].type == carnivore)
+
+                else if (entity_grid[i][j].type == herbivore)
+            }
+        }
         
         // Return the JSON representation of the entity grid
         nlohmann::json json_grid = entity_grid; 
