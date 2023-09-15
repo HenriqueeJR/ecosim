@@ -10,7 +10,7 @@ static const uint32_t NUM_ROWS = 15;
 // Constants
 const uint32_t PLANT_MAXIMUM_AGE = 10;
 const uint32_t HERBIVORE_MAXIMUM_AGE = 50;
-const uint32_t CARNIVORE_MAXIMUM_AGE = 80;s
+const uint32_t CARNIVORE_MAXIMUM_AGE = 80;
 const uint32_t MAXIMUM_ENERGY = 200;
 const uint32_t THRESHOLD_ENERGY_FOR_REPRODUCTION = 20;
 
@@ -64,6 +64,13 @@ namespace nlohmann
 
 // Grid that contains the entities
 static std::vector<std::vector<entity_t>> entity_grid;
+
+bool random_action(float probability) {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    return dis(gen) < probability;
+}
 
 int main()
 {
@@ -174,30 +181,42 @@ int main()
                 if (entity_grid[i][j].type == plant) {
                     std::vector<pos_t> possible_growth_positions;
 
-                    if (entity_grid[i+1][j].type == empty) {
+                    if(i+1 < 15) {
+                        if (entity_grid[i+1][j].type == empty) {
                         pos_t possible_position;
                         possible_position.i = i+1;
                         possible_position.j = j;
                         possible_growth_positions.push_back(possible_position);
+                        }
                     }
-                    if (entity_grid[i-1][j].type == empty) {
+                    
+                    if(i-1 >= 0) {
+                        if (entity_grid[i-1][j].type == empty) {
                         pos_t possible_position;
                         possible_position.i = i-1;
                         possible_position.j = j;
                         possible_growth_positions.push_back(possible_position);
+                        }
                     }
-                    if (entity_grid[i][j+1].type == empty) {
+                    
+                    if(j+1 < 15) {
+                        if (entity_grid[i][j+1].type == empty) {
                         pos_t possible_position;
                         possible_position.i = i;
                         possible_position.j = j+1;
                         possible_growth_positions.push_back(possible_position);
+                        }
                     }
-                    if (entity_grid[i][j-1].type == empty) {
+                    
+                    if(j-1 >= 0) {
+                        if (entity_grid[i][j-1].type == empty) {
                         pos_t possible_position;
                         possible_position.i = i;
                         possible_position.j = j-1;
                         possible_growth_positions.push_back(possible_position);
+                        }
                     }
+                    
 
                     if (!possible_growth_positions.empty()) {
                         if(random_action(0.2)) {
@@ -206,16 +225,16 @@ int main()
                             std::uniform_int_distribution<int> distribution(0, possible_growth_positions.size() - 1);
                             
                             pos_t selected_growth_position = possible_growth_positions[distribution(generator)];
-                            entity_grid[selected_growth_position.i][selected_growth_position.l].type = plant;
-                            entity_grid[selected_growth_position.i][selected_growth_position.l].energy = 0;
-                            entity_grid[selected_growth_position.i][selected_growth_position.l].age = 0;
+                            entity_grid[selected_growth_position.i][selected_growth_position.j].type = plant;
+                            entity_grid[selected_growth_position.i][selected_growth_position.j].energy = 0;
+                            entity_grid[selected_growth_position.i][selected_growth_position.j].age = 0;
                         }
 
                     }
 
-                    entity_grid[i][j].energy += 1;  //increase age
+                    entity_grid[i][j].age += 1;  //increase age
 
-                    if (entity_grid[i][j].energy == 10) {  //decompose
+                    if (entity_grid[i][j].age == 10) {  //decompose
                         entity_grid[i][j].type = empty;
                         entity_grid[i][j].energy = 0;
                         entity_grid[i][j].age = 0;
@@ -224,9 +243,9 @@ int main()
 
                 }
 
-                else if (entity_grid[i][j].type == carnivore)
+                //else if (entity_grid[i][j].type == carnivore)
 
-                else if (entity_grid[i][j].type == herbivore)
+                //else if (entity_grid[i][j].type == herbivore)
             }
         }
         
