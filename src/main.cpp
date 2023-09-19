@@ -243,7 +243,146 @@ int main()
 
                 }
 
-                //else if (entity_grid[i][j].type == carnivore)
+                else if (entity_grid[i][j].type == herbivore) {
+                    std::vector<pos_t> possible_move_positions;
+
+                    if(i+1 < 15) {
+                        if (entity_grid[i+1][j].type == empty) {   //moves to position
+                        pos_t possible_position;
+                        possible_position.i = i+1;
+                        possible_position.j = j;
+                        possible_move_positions.push_back(possible_position);
+                        }
+                        else if (entity_grid[i+1][j].type == plant) {   //eats the plant
+                            if (random_action(0.9)) {
+                                entity_grid[i][j].energy += 30;
+
+                                entity_grid[i+1][j].type = empty;
+                                entity_grid[i+1][j].energy = 0;
+                                entity_grid[i+1][j].age = 0;
+                            }
+                        }
+                    }
+                    
+                    if(i-1 >= 0) {
+                        if (entity_grid[i-1][j].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i-1;
+                        possible_position.j = j;
+                        possible_move_positions.push_back(possible_position);
+                        }
+                        else if (entity_grid[i-1][j].type == plant) {   
+                            if (random_action(0.9)) {
+                                entity_grid[i][j].energy += 30;
+
+                                entity_grid[i-1][j].type = empty;
+                                entity_grid[i-1][j].energy = 0;
+                                entity_grid[i-1][j].age = 0;
+                            }
+                        }
+                    }
+                    
+                    if(j+1 < 15) {
+                        if (entity_grid[i][j+1].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i;
+                        possible_position.j = j+1;
+                        possible_move_positions.push_back(possible_position);
+                        }
+                        else if (entity_grid[i][j+1].type == plant) {   
+                            if (random_action(0.9)) {
+                                entity_grid[i][j].energy += 30;
+
+                                entity_grid[i][j+1].type = empty;
+                                entity_grid[i][j+1].energy = 0;
+                                entity_grid[i][j+1].age = 0;
+                            }
+                        }
+                    }
+                    
+                    if(j-1 >= 0) {
+                        if (entity_grid[i][j-1].type == empty) {
+                        pos_t possible_position;
+                        possible_position.i = i;
+                        possible_position.j = j-1;
+                        possible_move_positions.push_back(possible_position);
+                        }
+                        else if (entity_grid[i][j-1].type == plant) {   
+                            if (random_action(0.9)) {
+                                entity_grid[i][j].energy += 30;
+
+                                entity_grid[i][j-1].type = empty;
+                                entity_grid[i][j-1].energy = 0;
+                                entity_grid[i][j-1].age = 0;
+                            }
+                        }
+                    }
+                    
+                    bool moved = false;
+                    pos_t selected_move_position;
+                    if (!possible_move_positions.empty()) {
+                        if(random_action(0.7)) {
+                            moved = true;
+                            std::random_device rd;  
+                            std::mt19937 generator(rd());  
+                            std::uniform_int_distribution<int> distribution(0, possible_move_positions.size() - 1);
+                            
+                            selected_move_position = possible_move_positions[distribution(generator)];
+                            entity_grid[selected_move_position.i][selected_move_position.j].type = herbivore;
+                            entity_grid[selected_move_position.i][selected_move_position.j].energy = entity_grid[i][j].energy - 5;
+                            entity_grid[selected_move_position.i][selected_move_position.j].age = entity_grid[i][j].age;
+
+                            entity_grid[i][j].type = empty;
+                            entity_grid[i][j].energy = 0;
+                            entity_grid[i][j].age = 0;
+
+                            //auto novo_fim = std::remove(possible_move_positions.begin(), possible_move_positions.end(), selected_move_position);
+                            //possible_move_positions.erase(novo_fim, possible_move_positions.end());
+                
+                        }
+
+                    }
+
+                    if (entity_grid[i][j].energy > 20) {    //chance of reproduction
+                        if(random_action(0.075)) {
+                            if(moved) entity_grid[selected_move_position.i][selected_move_position.j].energy -= 10;
+                            else entity_grid[i][j].energy -= 10;
+
+                            std::random_device rd;  
+                            std::mt19937 generator(rd());  
+                            std::uniform_int_distribution<int> distribution(0, possible_move_positions.size() - 1);
+                            
+                            pos_t selected_birth_position = possible_move_positions[distribution(generator)];
+                            entity_grid[selected_birth_position.i][selected_birth_position.j].type = herbivore;
+                            entity_grid[selected_birth_position.i][selected_birth_position.j].energy = 100;
+                            entity_grid[selected_birth_position.i][selected_birth_position.j].age = 0;
+                        }
+
+                    }
+
+                    if (moved) {                //death
+                        if (entity_grid[selected_move_position.i][selected_move_position.j].energy == 0 ||
+                         entity_grid[selected_move_position.i][selected_move_position.j].age == 50) {
+
+                            entity_grid[selected_move_position.i][selected_move_position.j].type = empty;
+                            entity_grid[selected_move_position.i][selected_move_position.j].age = 0;
+                            entity_grid[selected_move_position.i][selected_move_position.j].energy = 0;
+                        }
+                        else entity_grid[selected_move_position.i][selected_move_position.j].age += 1;
+                    } 
+                    else {
+                        if(entity_grid[i][j].energy == 0 ||
+                         entity_grid[i][j].age == 50) {
+
+                            entity_grid[i][j].type = empty;
+                            entity_grid[i][j].energy = 0;
+                            entity_grid[i][j].age = 0;
+                        }
+                        else entity_grid[i][j].age += 1;
+                    }
+
+
+                }
 
                 //else if (entity_grid[i][j].type == herbivore)
             }
