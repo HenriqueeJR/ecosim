@@ -336,9 +336,12 @@ int main()
                             entity_grid[i][j].energy = 0;
                             entity_grid[i][j].age = 0;
 
-                            //auto novo_fim = std::remove(possible_move_positions.begin(), possible_move_positions.end(), selected_move_position);
-                            //possible_move_positions.erase(novo_fim, possible_move_positions.end());
-                
+                            for(int x=0; x<possible_move_positions.size(); x++) {
+                                if (possible_move_positions[x].i == selected_move_position.i &&
+                                 possible_move_positions[x].j == selected_move_position.j) possible_move_positions.erase(possible_move_positions.begin() + x);
+                            }
+
+                            
                         }
 
                     }
