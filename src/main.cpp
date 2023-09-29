@@ -47,7 +47,7 @@ struct entity_t
     int32_t energy;
     int32_t age;
     bool already_iterated;
-    std::mutex m;
+    std::mutex* m;
 };
 
 // Auxiliary code to convert the entity_type_t enum to a string
@@ -79,13 +79,13 @@ bool random_action(float probability) {
 
 void simulate_plant(int i, int j) {
 
-    std::lock_guard<std::mutex> lock(entity_grid[i][j].m);
-    std::lock_guard<std::mutex> lock(entity_grid[i+1][j].m);
-    std::lock_guard<std::mutex> lock(entity_grid[i-1][j].m);
-    std::lock_guard<std::mutex> lock(entity_grid[i][j+1].m);
-    std::lock_guard<std::mutex> lock(entity_grid[i][j-1].m);
+    std::lock_guard<std::mutex> lock1(*entity_grid[i][j].m);
+    if(i+1 < 15) std::lock_guard<std::mutex> lock2(*entity_grid[i+1][j].m);
+    if(i-1 >= 0) std::lock_guard<std::mutex> lock3(*entity_grid[i-1][j].m);
+    if(j+1 < 15) std::lock_guard<std::mutex> lock4(*entity_grid[i][j+1].m);
+    if(j-1 >= 0) std::lock_guard<std::mutex> lock5(*entity_grid[i][j-1].m);
 
-    
+
     std::vector<pos_t> possible_growth_positions;
 
     if(i+1 < 15) {
@@ -151,10 +151,18 @@ void simulate_plant(int i, int j) {
 }
 
 void simulate_herbivore(int i, int j) {
+
+    std::lock_guard<std::mutex> lock1(*entity_grid[i][j].m);
+    if(i+1 < 15) std::lock_guard<std::mutex> lock2(*entity_grid[i+1][j].m);
+    if(i-1 >= 0) std::lock_guard<std::mutex> lock3(*entity_grid[i-1][j].m);
+    if(j+1 < 15) std::lock_guard<std::mutex> lock4(*entity_grid[i][j+1].m);
+    if(j-1 >= 0) std::lock_guard<std::mutex> lock5(*entity_grid[i][j-1].m);
+    
     std::vector<pos_t> empty_neighbours;
     std::vector<pos_t> plant_neighbours;
 
     if(i+1 < 15) {
+        
         if (entity_grid[i+1][j].type == empty) {   
             pos_t possible_position;
             possible_position.i = i+1;
@@ -172,6 +180,7 @@ void simulate_herbivore(int i, int j) {
     }
     
     if(i-1 >= 0) {
+        
         if (entity_grid[i-1][j].type == empty) {
             pos_t possible_position;
             possible_position.i = i-1;
@@ -187,6 +196,7 @@ void simulate_herbivore(int i, int j) {
     }
     
     if(j+1 < 15) {
+        
         if (entity_grid[i][j+1].type == empty) {
             pos_t possible_position;
             possible_position.i = i;
@@ -202,6 +212,7 @@ void simulate_herbivore(int i, int j) {
     }
     
     if(j-1 >= 0) {
+        
         if (entity_grid[i][j-1].type == empty) {
             pos_t possible_position;
             possible_position.i = i;
@@ -294,6 +305,14 @@ void simulate_herbivore(int i, int j) {
 }
 
 void simulate_carnivore(int i, int j) {
+
+    std::lock_guard<std::mutex> lock1(*entity_grid[i][j].m);
+    if(i+1 < 15) std::lock_guard<std::mutex> lock2(*entity_grid[i+1][j].m);
+    if(i-1 >= 0) std::lock_guard<std::mutex> lock3(*entity_grid[i-1][j].m);
+    if(j+1 < 15) std::lock_guard<std::mutex> lock4(*entity_grid[i][j+1].m);
+    if(j-1 >= 0) std::lock_guard<std::mutex> lock5(*entity_grid[i][j-1].m);
+
+
     std::vector<pos_t> empty_neighbours;
     std::vector<pos_t> herbivore_neighbours;
 
@@ -464,7 +483,12 @@ int main()
 
         // Clear the entity grid
         entity_grid.clear();
-        entity_grid.assign(NUM_ROWS, std::vector<entity_t>(NUM_ROWS, { empty, 0, 0, false}));
+        entity_grid.assign(NUM_ROWS, std::vector<entity_t>(NUM_ROWS, { empty, 0, 0, false, new std::mutex()}));
+        for(int i=0; i<15; i++) {
+            for(int j=0; j<15; j++) {
+                entity_grid[i][j].m = new std::mutex();
+            }
+        }
         
         // Create the entities
         // <YOUR CODE HERE>
@@ -550,12 +574,15 @@ int main()
                 if (!entity_grid[i][j].already_iterated) {
                     if (entity_grid[i][j].type == plant) {
                         std::thread t_plant(simulate_plant, i, j);
+                        t_plant.detach();
                     }
                     else if (entity_grid[i][j].type == herbivore) {
                         std::thread t_herbivore(simulate_herbivore, i, j);
+                        t_herbivore.detach();
                     }
                     else if (entity_grid[i][j].type == carnivore) {
                         std::thread t_carnivore(simulate_carnivore, i, j);
+                        t_carnivore.detach();
                     }
                     
                 }
